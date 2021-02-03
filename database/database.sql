@@ -25,14 +25,25 @@ CREATE TABLE users(
 
 CREATE TABLE courses_content(
     id SERIAL PRIMARY KEY,
-    name VARCHAR(40),
-    content TEXT
+    courseName VARCHAR(40),
+    pageTitle TEXT,
+    pageNumber INTEGER,
+    pageType TEXT,
+    content TEXT,
+    choices TEXT,
+    correctAnswer INTEGER
 );
 
 CREATE TABLE courses_grades(
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     FOREIGN KEY(id) REFERENCES users(id),
-    course_A FLOAT,
-    course_B FLOAT,
-    course_C FLOAT
+    coverLetter_current_page INTEGER DEFAULT 1,
+    elevatorPitch_current_page INTEGER DEFAULT 1,
+    emails_current_page INTEGER DEFAULT 1,
+    establishingSchedule_current_page INTEGER DEFAULT 1,
+    interviewPreparation_current_page INTEGER DEFAULT 1,
+    personalMotivation_current_page INTEGER DEFAULT 1,
+    selfAssessment_current_page INTEGER DEFAULT 1,
+    transferableSkills_current_page INTEGER DEFAULT 1,
+    typesOfInterviews_current_page INTEGER DEFAULT 1
 );
