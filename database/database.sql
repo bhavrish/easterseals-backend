@@ -23,14 +23,7 @@ CREATE TABLE users(
     referral_source VARCHAR(40),
     resources VARCHAR(50)
 );
-CREATE TABLE feedback(
-    course_quality TINYINT,
-    course_relevance TINYINT,
-    course_navigation TINYINT,
-    course_comprehension TINYINT,
-    recommended BIT,
-    suggestions TEXT
-) CREATE TABLE courses_content(
+CREATE TABLE courses_content(
     id SERIAL PRIMARY KEY,
     courseName VARCHAR(40),
     pageTitle TEXT,
@@ -52,4 +45,13 @@ CREATE TABLE courses_grades(
     selfAssessment_current_page INTEGER DEFAULT 1,
     transferableSkills_current_page INTEGER DEFAULT 1,
     typesOfInterviews_current_page INTEGER DEFAULT 1
+);
+CREATE TABLE course_feedback(
+    id SERIAL PRIMARY KEY,
+    course_quality SMALLINT,
+    course_relevance SMALLINT,
+    course_navigation SMALLINT,
+    course_comprehension SMALLINT,
+    recommended BIT,
+    suggestions TEXT
 );
