@@ -1,5 +1,4 @@
 CREATE DATABASE easterseals;
-
 CREATE TABLE users(
     id SERIAL PRIMARY KEY,
     name VARCHAR(40),
@@ -20,9 +19,10 @@ CREATE TABLE users(
     household_size INTEGER,
     income FLOAT,
     current_course VARCHAR(20),
-    completed_courses VARCHAR(40)
+    completed_courses VARCHAR(40),
+    referral_source VARCHAR(40),
+    resources VARCHAR(20),
 );
-
 CREATE TABLE courses_content(
     id SERIAL PRIMARY KEY,
     courseName VARCHAR(40),
@@ -33,7 +33,6 @@ CREATE TABLE courses_content(
     choices TEXT,
     correctAnswer INTEGER
 );
-
 CREATE TABLE courses_grades(
     id INTEGER PRIMARY KEY,
     FOREIGN KEY(id) REFERENCES users(id),
