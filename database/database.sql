@@ -23,7 +23,14 @@ CREATE TABLE users(
     referral_source VARCHAR(40),
     resources VARCHAR(50)
 );
-CREATE TABLE courses_content(
+CREATE TABLE feedback(
+    course_quality TINYINT,
+    course_relevance TINYINT,
+    course_navigation TINYINT,
+    course_comprehension TINYINT,
+    recommended BIT,
+    suggestions TEXT
+) CREATE TABLE courses_content(
     id SERIAL PRIMARY KEY,
     courseName VARCHAR(40),
     pageTitle TEXT,
