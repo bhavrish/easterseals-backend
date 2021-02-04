@@ -33,7 +33,7 @@ export const getUser = async (req: Request, res: Response): Promise<Response> =>
 export const createUser = async (req: Request, res: Response): Promise<Response> => {
     var {name, email, password, phone_num, date_of_birth, race, gender, address, employemnt_status,
         military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank,
-        milirary_speciality, household_size, income, current_course, completed_courses, refferal_source, resources} = req.body;
+        milirary_speciality, household_size, income, current_course, completed_courses, referral_source, resources} = req.body;
 
     try {
         // check if user exists
@@ -49,7 +49,7 @@ export const createUser = async (req: Request, res: Response): Promise<Response>
         const userRow = await pool.query('INSERT INTO users (name, email, password, phone_num, date_of_birth, race, gender, address, employemnt_status, military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank, milirary_speciality, household_size, income, current_course, completed_courses) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)', 
         [name, email, password, phone_num, date_of_birth, race, gender, address, employemnt_status,
             military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank,
-            milirary_speciality, household_size, income, current_course, completed_courses, refferal_source, resources]);
+            milirary_speciality, household_size, income, current_course, completed_courses, referral_source, resources]);
         const userID = userRow.rows[0].id;
 
         // create record in courses_grades DB
@@ -78,7 +78,7 @@ export const createUser = async (req: Request, res: Response): Promise<Response>
                     income,
                     current_course,
                     completed_courses,
-                    refferal_source,
+                    referral_source,
                     resources
                 }
             }

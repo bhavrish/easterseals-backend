@@ -21,7 +21,7 @@ CREATE TABLE users(
     current_course VARCHAR(20),
     completed_courses VARCHAR(40),
     referral_source VARCHAR(40),
-    resources VARCHAR(20),
+    resources VARCHAR(50)
 );
 CREATE TABLE courses_content(
     id SERIAL PRIMARY KEY,
