@@ -12,7 +12,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteUser = exports.updateUser = exports.signInUser = exports.createUser = exports.getUser = exports.getUsers = void 0;
 const database_1 = require("../database");
 const bcryptjs = require('bcryptjs');
-const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// get all users (ADMIN FUNCTION)
+exports.getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const response = yield database_1.pool.query('Select * FROM users');
         return res.status(200).json(response.rows);
@@ -22,11 +23,11 @@ const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return res.status(500).json('Internal Server Error');
     }
 });
-exports.getUsers = getUsers;
-const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = parseInt(req.params.id);
+// get specific user (ADMIN FUNCTION)
+exports.getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userID = parseInt(req.params.userID);
     try {
-        const response = yield database_1.pool.query('Select * FROM users WHERE id = $1', [id]);
+        const response = yield database_1.pool.query('Select * FROM users WHERE id = $1', [userID]);
         return res.status(200).json(response.rows);
     }
     catch (e) {
@@ -34,8 +35,8 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return res.status(500).json('Internal Server Error');
     }
 });
-exports.getUser = getUser;
-const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// register user (USER FUNCTION)
+exports.createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var { name, email, password, phone_num, date_of_birth, race, gender, address, employemnt_status, military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank, milirary_speciality, household_size, income, current_course, completed_courses } = req.body;
     try {
         // check if user exists
@@ -45,9 +46,13 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         // hash password
         const salt = yield bcryptjs.genSalt(10);
         password = yield bcryptjs.hash(password, salt);
-        yield database_1.pool.query('INSERT INTO users (name, email, password, phone_num, date_of_birth, race, gender, address, employemnt_status, military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank, milirary_speciality, household_size, income, current_course, completed_courses) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)', [name, email, password, phone_num, date_of_birth, race, gender, address, employemnt_status,
+        // created record in users DB
+        const userRow = yield database_1.pool.query('INSERT INTO users (name, email, password, phone_num, date_of_birth, race, gender, address, employemnt_status, military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank, milirary_speciality, household_size, income, current_course, completed_courses) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)', [name, email, password, phone_num, date_of_birth, race, gender, address, employemnt_status,
             military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank,
             milirary_speciality, household_size, income, current_course, completed_courses]);
+        const userID = userRow.rows[0].id;
+        // create record in courses_grades DB
+        yield database_1.pool.query('INSERT INTO courses_grades (id)', [userID]);
         return res.json({
             message: 'User created succesfully',
             body: {
@@ -80,8 +85,8 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         return res.status(500).json('Internal Server Error');
     }
 });
-exports.createUser = createUser;
-const signInUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// log in user (USER FUNCTION)
+exports.signInUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
     try {
         // check if user exists
@@ -99,29 +104,28 @@ const signInUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         return res.status(500).json('Internal Server Error');
     }
 });
-exports.signInUser = signInUser;
-const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = parseInt(req.params.id);
+// update user details (USER FUNCTION)
+exports.updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userID = parseInt(req.params.userID);
     const { name, email, phone_num } = req.body;
     try {
-        yield database_1.pool.query('UPDATE users SET name = $1, email = $2, phone_num = $3 WHERE id = $4', [name, email, phone_num, id]);
-        return res.json('User ${id} updated succesfully');
+        yield database_1.pool.query('UPDATE users SET name = $1, email = $2, phone_num = $3 WHERE id = $4', [name, email, phone_num, userID]);
+        return res.json('User ${userID} updated succesfully');
     }
     catch (e) {
         console.log(e);
         return res.status(500).json('Internal Server Error');
     }
 });
-exports.updateUser = updateUser;
-const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = parseInt(req.params.id);
+// delete user (USER/ ADMIN FUNCTION)
+exports.deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userID = parseInt(req.params.userID);
     try {
-        yield database_1.pool.query('DELETE FROM users WHERE id = $1', [id]);
-        return res.json('User ${id} deleted succesfully');
+        yield database_1.pool.query('DELETE FROM users WHERE id = $1', [userID]);
+        return res.json('User ${userID} deleted succesfully');
     }
     catch (e) {
         console.log(e);
         return res.status(500).json('Internal Server Error');
     }
 });
-exports.deleteUser = deleteUser;

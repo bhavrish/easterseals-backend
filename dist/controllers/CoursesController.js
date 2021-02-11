@@ -9,11 +9,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteCourse = exports.updateCourse = exports.createCourse = exports.getCourse = exports.getCourses = void 0;
+exports.deleteCourse = exports.updatePageNumber = exports.createCoursePage = exports.getCourse = void 0;
 const database_1 = require("../database");
-const getCourses = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// get specific course (USER FUNCTION)
+exports.getCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const name = parseInt(req.params.name);
+    const userID = parseInt(req.body.userID);
     try {
-        const response = yield database_1.pool.query('Select * FROM courses_content');
+        const pageQueryString = name + "_current_page";
+        const currentPage = yield database_1.pool.query('SELECT $1 FROM courses_grades WHERE users.id = $2;', [pageQueryString, userID]);
+        const response = yield database_1.pool.query('Select * FROM courses_content WHERE courseName = $1 AND pageNumber >= $2', [name, currentPage]);
         return res.status(200).json(response.rows);
     }
     catch (e) {
@@ -21,29 +26,22 @@ const getCourses = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         return res.status(500).json('Internal Server Error');
     }
 });
-exports.getCourses = getCourses;
-const getCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = parseInt(req.params.id);
+// create new course page (ADMIN FUNCTION)
+exports.createCoursePage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { courseName, pageTitle, pageNumber, pageType, content, choices, correctAnswer } = req.body;
     try {
-        const response = yield database_1.pool.query('Select * FROM courses_content WHERE id = $1', [id]);
-        return res.status(200).json(response.rows);
-    }
-    catch (e) {
-        console.log(e);
-        return res.status(500).json('Internal Server Error');
-    }
-});
-exports.getCourse = getCourse;
-const createCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { name, content } = req.body;
-    try {
-        yield database_1.pool.query('INSERT INTO courses_content (name, content) VALUES ($1, $2)', [name, content]);
+        yield database_1.pool.query('INSERT INTO courses_content (courseName, pageTitle, pageNumber, pageType, content, choices, correctAnswer) VALUES ($1, $2, $3, $4, $5, $6, $7)', [courseName, pageTitle, pageNumber, pageType, content, choices, correctAnswer]);
         return res.json({
-            message: 'Course created succesfully',
+            message: 'Course page created succesfully',
             body: {
                 course: {
-                    name,
-                    content
+                    courseName,
+                    pageTitle,
+                    pageNumber,
+                    pageType,
+                    content,
+                    choices,
+                    correctAnswer
                 }
             }
         });
@@ -53,12 +51,12 @@ const createCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         return res.status(500).json('Internal Server Error');
     }
 });
-exports.createCourse = createCourse;
-const updateCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = parseInt(req.params.id);
-    const { name, content } = req.body;
+// update progress in specific course (USER FUNCTION)
+exports.updatePageNumber = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { name, userID, page } = req.body;
     try {
-        yield database_1.pool.query('UPDATE courses_content SET name = $1, content = $2 WHERE id = $4', [name, content, id]);
+        const pageQueryString = name + "_current_page";
+        yield database_1.pool.query('UPDATE courses_content SET $1 = $2 WHERE id = $3', [pageQueryString, page, userID]);
         return res.json('Course ${id} updated succesfully');
     }
     catch (e) {
@@ -66,8 +64,8 @@ const updateCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         return res.status(500).json('Internal Server Error');
     }
 });
-exports.updateCourse = updateCourse;
-const deleteCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// delete course (ADMIN FUNCTION)
+exports.deleteCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = parseInt(req.params.id);
     try {
         yield database_1.pool.query('DELETE FROM courses_content WHERE id = $1', [id]);
@@ -78,4 +76,3 @@ const deleteCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         return res.status(500).json('Internal Server Error');
     }
 });
-exports.deleteCourse = deleteCourse;
