@@ -37,7 +37,7 @@ exports.getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 // register user (USER FUNCTION)
 exports.createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var { name, email, password, phone_num, date_of_birth, race, gender, address, employemnt_status, military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank, milirary_speciality, household_size, income, current_course, completed_courses } = req.body;
+    var { name, email, password, phone_num, date_of_birth, race, gender, address, employemnt_status, military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank, milirary_speciality, household_size, income, current_course, completed_courses, referral_source, resources } = req.body;
     try {
         // check if user exists
         const user = yield database_1.pool.query('Select * FROM users WHERE email = $1', [email]);
@@ -49,7 +49,7 @@ exports.createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         // created record in users DB
         const userRow = yield database_1.pool.query('INSERT INTO users (name, email, password, phone_num, date_of_birth, race, gender, address, employemnt_status, military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank, milirary_speciality, household_size, income, current_course, completed_courses) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)', [name, email, password, phone_num, date_of_birth, race, gender, address, employemnt_status,
             military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank,
-            milirary_speciality, household_size, income, current_course, completed_courses]);
+            milirary_speciality, household_size, income, current_course, completed_courses, referral_source, resources]);
         const userID = userRow.rows[0].id;
         // create record in courses_grades DB
         yield database_1.pool.query('INSERT INTO courses_grades (id)', [userID]);
@@ -75,7 +75,9 @@ exports.createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                     household_size,
                     income,
                     current_course,
-                    completed_courses
+                    completed_courses,
+                    referral_source,
+                    resources
                 }
             }
         });
@@ -110,7 +112,7 @@ exports.updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     const { name, email, phone_num } = req.body;
     try {
         yield database_1.pool.query('UPDATE users SET name = $1, email = $2, phone_num = $3 WHERE id = $4', [name, email, phone_num, userID]);
-        return res.json('User ${userID} updated succesfully');
+        return res.json('User ' + userID + ' updated succesfully');
     }
     catch (e) {
         console.log(e);
@@ -122,7 +124,7 @@ exports.deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     const userID = parseInt(req.params.userID);
     try {
         yield database_1.pool.query('DELETE FROM users WHERE id = $1', [userID]);
-        return res.json('User ${userID} deleted succesfully');
+        return res.json('User ' + userID + ' deleted succesfully');
     }
     catch (e) {
         console.log(e);

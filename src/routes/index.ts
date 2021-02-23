@@ -1,6 +1,7 @@
 import {Router} from 'express'
 import {getUsers, getUser, createUser, signInUser, updateUser, deleteUser} from '../controllers/UsersController'
 import {getCourse, createCoursePage, updatePageNumber, deleteCourse} from '../controllers/CoursesController'
+import {getFeedback, postFeedback} from '../controllers/FeedbackControllers'
 
 const router = Router();
 
@@ -17,5 +18,9 @@ router.get('/courses/:id', getCourse) // get specific course (USER FUNCTION)
 router.post('/courses', createCoursePage) // create new course page (ADMIN FUNCTION)
 router.put('/courses', updatePageNumber) // update progress in specific course (USER FUNCTION)
 router.delete('/courses/:id', deleteCourse) // delete course (ADMIN FUNCTION)
+
+// feedback-related endpoints
+router.get('/feedback', getFeedback) // get feedback for all courses (ADMIN FUNCTION)
+router.post('/feedback', postFeedback) // post new feedback about course (USER FUNCTION)
 
 export default router;

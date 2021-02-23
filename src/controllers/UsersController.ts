@@ -125,7 +125,7 @@ export const updateUser = async (req: Request, res: Response): Promise<Response>
 
     try {
         await pool.query('UPDATE users SET name = $1, email = $2, phone_num = $3 WHERE id = $4', [name, email, phone_num, userID]); 
-        return res.json('User ${userID} updated succesfully');
+        return res.json('User ' + userID + ' updated succesfully');
     }
     catch(e) {
         console.log(e);
@@ -139,7 +139,7 @@ export const deleteUser = async (req: Request, res: Response): Promise<Response>
 
     try {
         await pool.query('DELETE FROM users WHERE id = $1', [userID]); 
-        return res.json('User ${userID} deleted succesfully');
+        return res.json('User ' + userID + ' deleted succesfully');
     }
     catch(e) {
         console.log(e);
