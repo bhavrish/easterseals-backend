@@ -5,7 +5,30 @@ const UsersController_1 = require("../controllers/UsersController");
 const FeedbackController_1 = require("../controllers/FeedbackController");
 const GradesController_1 = require("../controllers/GradesController");
 const router = express_1.Router();
-router.get('/', (req, res) => { res.json({ backend_status: "running" }); });
+router.get('/', (req, res) => {
+    res.send(`<b>user-related endpoints</b>
+            <ul>
+            <li>/users [GET]: get all users <p style="color:orange; display:inline">(ADMIN FUNCTION)</p></li>
+            <li>/users/:userID [GET]: get specific user <p style="color:orange; display:inline">(ADMIN FUNCTION)</p></li>
+            <li>/users/signup [POST]: register user <p style="color:green; display:inline">(USER FUNCTION)</p></li>
+            <li>/users/login [POST]: log in user <p style="color:green; display:inline">(USER FUNCTION)</p></li>
+            <li>/users/:userID [PUT]: update user details <p style="color:green; display:inline">(USER FUNCTION)</p></li>
+            <li>/users/:userID [DELETE]: delete user <p style="color:blue; display:inline">(USER/ ADMIN FUNCTION)</p></li>
+            </ul><br/>
+            <b>feedback-related endpoints</b>
+            <ul>
+            <li>/feedback [GET]: get feedback for all courses <p style="color:orange; display:inline">(ADMIN FUNCTION)</p></li>
+            <li>/feedback/:courseID [GET]: get feedback for specific course <p style="color:orange; display:inline">(ADMIN FUNCTION)</p></li>
+            <li>/feedback [POST]: post new feedback about course <p style="color:green; display:inline">(USER FUNCTION)</p></li>
+            </ul><br/>
+            <b>grade-related endpoints</b>
+            <ul>
+            <li>/grades [GET]: get all grades <p style="color:orange; display:inline">(ADMIN FUNCTION)</p></li>
+            <li>/grades/user/:userID [GET]: get grades for specific user <p style="color:blue; display:inline">(USER/ ADMIN FUNCTION)</p></li>
+            <li>/grades/:course_id [GET]: get grades for specific course <p style="color:orange; display:inline">(ADMIN FUNCTION)</p></li>
+            <li>/grades [POST]: upload new grade for a course <p style="color:green; display:inline">(USER FUNCTION)</p></li>
+            </ul>`);
+});
 // user-related endpoints
 router.get('/users', UsersController_1.getUsers); // get all users (ADMIN FUNCTION)
 router.get('/users/:userID', UsersController_1.getUser); // get specific user (ADMIN FUNCTION)
@@ -20,6 +43,6 @@ router.post('/feedback', FeedbackController_1.postFeedback); // post new feedbac
 // grade-related endpoints
 router.get('/grades', GradesController_1.getAllGrades); // get all grades (ADMIN FUNCTION)
 router.get('/grades/user/:userID', GradesController_1.getUserGrades); // get grades for specific user (USER/ ADMIN FUNCTION)
-router.get('/grades/:id', GradesController_1.getCourseGrades); // get grades for specific course (ADMIN FUNCTION)
+router.get('/grades/:course_id', GradesController_1.getCourseGrades); // get grades for specific course (ADMIN FUNCTION)
 router.post('/grades', GradesController_1.uploadGrade); // upload new grade for a course (USER FUNCTION)
 exports.default = router;
