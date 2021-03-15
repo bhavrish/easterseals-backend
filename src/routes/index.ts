@@ -9,7 +9,7 @@ router.get('/', (req, res) => {
     res.send(`<b>user-related endpoints</b>
             <ul>
             <li>/users [GET]: get all users <p style="color:orange; display:inline">(ADMIN FUNCTION)</p></li>
-            <li>/users/:userID [GET]: get specific user <p style="color:orange; display:inline">(ADMIN FUNCTION)</p></li>
+            <li>/users/:userID [GET]: get specific user <p style="color:blue; display:inline">(USER/ ADMIN FUNCTION)</p></li>
             <li>/users/signup [POST]: register user <p style="color:green; display:inline">(USER FUNCTION)</p></li>
             <li>/users/login [POST]: log in user <p style="color:green; display:inline">(USER FUNCTION)</p></li>
             <li>/users/:userID [PUT]: update user details <p style="color:green; display:inline">(USER FUNCTION)</p></li>
