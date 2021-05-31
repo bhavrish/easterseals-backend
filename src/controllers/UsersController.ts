@@ -209,8 +209,13 @@ export const deleteUser = async (req: Request, res: Response): Promise<Response>
         if (!isMatch)
             return res.status(401).json({ msg: 'Incorrect password' });
 
-        // auth was succesful so delete user
+        // delete rows in grades and feedback table that are referencing user
+        await pool.query('DELETE FROM user_grades WHERE user_id = $1', [userID]); 
+        await pool.query('DELETE FROM user_feedback WHERE user_id = $1', [userID]); 
+
+        // delete user
         await pool.query('DELETE FROM users WHERE id = $1', [userID]); 
+
         return res.json('User ' + userID + ' account deleted succesfully');
     }
     catch(e) {
