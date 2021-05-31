@@ -50,7 +50,7 @@ export const uploadGrade = async (req: Request, res: Response): Promise<Response
     try {
         await pool.query('INSERT INTO user_grades (grade, user_id, course_id) VALUES ($1, $2, $3)', [grade, user_id, course_id]);
         return res.json({
-            message: 'Feedback posted succesfully',
+            message: 'Grade uploaded succesfully',
             body: {
                 user_grade: {
                     grade,
