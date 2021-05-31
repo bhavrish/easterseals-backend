@@ -43,7 +43,7 @@ export const getCourseGrades = async (req: Request, res: Response): Promise<Resp
     }
 }
 
-// upload new grade for a course (USER FUNCTION)
+// upload new course grade for a user (USER FUNCTION)
 export const uploadGrade = async (req: Request, res: Response): Promise<Response> => {
     const {grade, user_id, course_id} = req.body;
 
