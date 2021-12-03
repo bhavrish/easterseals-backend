@@ -23,7 +23,7 @@ export const getUser = async (req: Request, res: Response): Promise<Response> =>
 
     // ensure required fields were entered
     if (!email || !password)
-        return res.status(200).json("Please enter required fields!");
+        return res.status(400).json("Please enter required fields!");
 
     try {
         // retrive user object
@@ -58,13 +58,13 @@ export const createUser = async (req: Request, res: Response): Promise<Response>
 
     // ensure required fields were entered
     if (!email || !password)
-        return res.status(200).json("Please enter required fields!");
+        return res.status(400).json("Please enter required fields!");
 
     try {
         // check if username already exists
         const user: QueryResult = await pool.query('Select * FROM users WHERE email = $1', [email]);
         if (user.rowCount > 0)
-            return res.status(200).json("Username already exists!");
+            return res.status(404).json("Username already exists!");
 
         // hash password
         const salt = await bcryptjs.genSalt(10);
@@ -91,7 +91,7 @@ export const signInUser = async (req: Request, res: Response): Promise<Response>
 
     // ensure required fields were entered
     if (!email || !password)
-        return res.status(200).json("Please enter required fields!");
+        return res.status(400).json("Please enter required fields!");
 
     try {
         // retrieve user to-be-logged-in object
@@ -127,7 +127,7 @@ export const updateUser = async (req: Request, res: Response): Promise<Response>
 
     // ensure required fields were entered
     if (!email || !password)
-        return res.status(200).json("Please enter required fields!");
+        return res.status(400).json("Please enter required fields!");
 
     try {
         // retrive user to-be-updated object
@@ -190,7 +190,7 @@ export const deleteUser = async (req: Request, res: Response): Promise<Response>
 
     // ensure required fields were entered
     if (!email || !password)
-        return res.status(200).json("Please enter required fields!");
+        return res.status(400).json("Please enter required fields!");
 
     try {
         // retrive user to-be-deleted object
@@ -216,7 +216,7 @@ export const deleteUser = async (req: Request, res: Response): Promise<Response>
         // delete user
         await pool.query('DELETE FROM users WHERE id = $1', [userID]); 
 
-        return res.json('User ' + userID + ' account deleted succesfully');
+        return res.status(200).json('User ' + userID + ' account deleted succesfully');
     }
     catch(e) {
         console.log(e);
