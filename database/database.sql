@@ -50,6 +50,7 @@ CREATE TABLE course_progress(
     user_id SERIAL NOT NULL,
     course_id SERIAL NOT NULL,
     progression DECIMAL,
+    total_pages DECIMAL,
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (course_id) REFERENCES courses (id)
 );
