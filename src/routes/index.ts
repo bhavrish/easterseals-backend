@@ -1,5 +1,5 @@
 import {Router} from 'express'
-import {getUsers, getUser, createUser, signInUser, updateUser, deleteUser} from '../controllers/UsersController'
+import {getUsers, getUser, createUser, signInUser, updateUser, deleteUser, updateUserPassword} from '../controllers/UsersController'
 import {getAllFeedback, getCourseFeedback, postFeedback} from '../controllers/FeedbackController'
 import {getAllGrades, getUserGrades, getCourseGrades, uploadGrade} from '../controllers/GradesController'
 
@@ -36,6 +36,7 @@ router.get('/users/:userID', getUser) // get specific user (ADMIN FUNCTION)
 router.post('/users/signup', createUser) // register user (USER FUNCTION)
 router.post('/users/login', signInUser) // log in user (USER FUNCTION)
 router.put('/users/:userID', updateUser) // update user details (USER FUNCTION)
+router.put('/users/:userID/changePassword', updateUserPassword) // delete user (USER/ ADMIN FUNCTION)
 router.delete('/users/:userID', deleteUser) // delete user (USER/ ADMIN FUNCTION)
 
 // feedback-related endpoints
