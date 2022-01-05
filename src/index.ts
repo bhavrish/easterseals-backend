@@ -11,4 +11,6 @@ const PORT = process.env.PORT || 4000;
 app.use(express.json());
 
 app.use(routes);
-app.listen(PORT);
+app.listen(PORT, function () {
+    console.log("listening on port " + PORT);
+  });
