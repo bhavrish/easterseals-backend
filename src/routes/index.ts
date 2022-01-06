@@ -2,6 +2,7 @@ import {Router} from 'express'
 import {getUsers, getUser, createUser, signInUser, updateUser, deleteUser, updateUserPassword} from '../controllers/UsersController'
 import {getAllFeedback, getCourseFeedback, postFeedback} from '../controllers/FeedbackController'
 import {getAllGrades, getUserGrades, getCourseGrades, uploadGrade} from '../controllers/GradesController'
+import {getUserProgress, saveProgress, updateProgress} from '../controllers/ProgressController'
 
 const router = Router();
 
@@ -49,5 +50,10 @@ router.get('/grades', getAllGrades) // get all grades (ADMIN FUNCTION)
 router.get('/grades/user/:userID', getUserGrades) // get grades for specific user (USER/ ADMIN FUNCTION)
 router.get('/grades/:course_id', getCourseGrades) // get grades for specific course (ADMIN FUNCTION)
 router.post('/grades', uploadGrade) // upload new grade for a course (USER FUNCTION)
+
+// progress-related endpoints
+router.get('/progress/user/:userID', getUserProgress) // get progress of all courses for a specific user 
+router.post('/progress', saveProgress) // save course progress for a user
+router.post('/progress/user/:userID', updateProgress) // update an existing user course progress
 
 export default router;
