@@ -107,10 +107,14 @@ export const signInUser = async (req: Request, res: Response): Promise<Response>
             user.rows[0].password
         );
 
-        if (isMatch)
+        if (isMatch) {
             // TODO: Update signInUser function on backend to not return hashed password - security risk
             // return all except password
-            return res.status(200).json(user.rows[0].filter);
+            delete user.rows[0].password;
+
+            return res.status(200).json(user.rows[0]);
+        }
+            
         else
             return res.status(401).json({ msg: 'Incorrect password' });
     }
