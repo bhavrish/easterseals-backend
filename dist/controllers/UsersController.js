@@ -9,11 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.updateUser = exports.signInUser = exports.createUser = exports.getUser = exports.getUsers = void 0;
+exports.deleteUser = exports.updateUser = exports.updateUserPassword = exports.signInUser = exports.createUser = exports.getUser = exports.getUsers = void 0;
 const database_1 = require("../database");
 const bcryptjs = require('bcryptjs');
 // get all users (ADMIN FUNCTION)
-exports.getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // remove personally identifiable information and only display relevant information
         const response = yield database_1.pool.query('Select date_of_birth, race, gender, address, employment_status, military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank, military_speciality, household_size, income, current_course, completed_courses, referral_source, resources FROM users');
@@ -24,13 +24,14 @@ exports.getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         return res.status(500).json('Internal Server Error');
     }
 });
+exports.getUsers = getUsers;
 // get specific user (ADMIN FUNCTION)
-exports.getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userID = parseInt(req.params.userID);
     const { email, password } = req.body;
     // ensure required fields were entered
     if (!email || !password)
-        return res.status(200).json("Please enter required fields!");
+        return res.status(400).json("Please enter required fields!");
     try {
         // retrive user object
         const user = yield database_1.pool.query('Select * FROM users WHERE id = $1', [userID]);
@@ -48,17 +49,18 @@ exports.getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return res.status(500).json('Internal Server Error');
     }
 });
+exports.getUser = getUser;
 // register user (USER FUNCTION)
-exports.createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var { name, email, password, phone_num, date_of_birth, race, gender, address, employment_status, military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank, military_speciality, household_size, income, current_course, completed_courses, referral_source, resources } = req.body;
     // ensure required fields were entered
     if (!email || !password)
-        return res.status(200).json("Please enter required fields!");
+        return res.status(400).json("Please enter required fields!");
     try {
-        // check if user exists
+        // check if username already exists
         const user = yield database_1.pool.query('Select * FROM users WHERE email = $1', [email]);
         if (user.rowCount > 0)
-            return res.status(200).json("Username already exists!");
+            return res.status(404).json("Username already exists!");
         // hash password
         const salt = yield bcryptjs.genSalt(10);
         password = yield bcryptjs.hash(password, salt);
@@ -74,12 +76,13 @@ exports.createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         return res.status(500).json('Internal Server Error');
     }
 });
+exports.createUser = createUser;
 // log in user (USER FUNCTION)
-exports.signInUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const signInUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
     // ensure required fields were entered
     if (!email || !password)
-        return res.status(200).json("Please enter required fields!");
+        return res.status(400).json("Please enter required fields!");
     try {
         // retrieve user to-be-logged-in object
         const user = yield database_1.pool.query('Select * FROM users WHERE email = $1', [email]);
@@ -88,8 +91,12 @@ exports.signInUser = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             return res.status(401).json("Username does not exist");
         // if current user's password does not match account to be logged in
         const isMatch = yield bcryptjs.compare(password, user.rows[0].password);
-        if (isMatch)
-            return res.status(200).json(user.rows);
+        if (isMatch) {
+            // TODO: Update signInUser function on backend to not return hashed password - security risk
+            // return all except password
+            delete user.rows[0].password;
+            return res.status(200).json(user.rows[0]);
+        }
         else
             return res.status(401).json({ msg: 'Incorrect password' });
     }
@@ -98,63 +105,201 @@ exports.signInUser = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         return res.status(500).json('Internal Server Error');
     }
 });
+exports.signInUser = signInUser;
 // update user details (USER FUNCTION)
-exports.updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateUserPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userID = parseInt(req.params.userID);
-    var { name, email, password, new_password, phone_num, date_of_birth, race, gender, address, employment_status, military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank, military_speciality, household_size, income, current_course, completed_courses, referral_source, resources } = req.body;
+    var { name, email, password, new_password, phone_num, date_of_birth, race, gender, address, employment_status, military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank, military_speciality, household_size, income, current_course, completed_courses, referral_source, resources, } = req.body;
     // ensure required fields were entered
     if (!email || !password)
-        return res.status(200).json("Please enter required fields!");
+        return res.status(400).json("Please enter required fields!");
     try {
         // retrive user to-be-updated object
-        const user = yield database_1.pool.query('Select * FROM users WHERE id = $1', [userID]);
+        const user = yield database_1.pool.query("Select * FROM users WHERE id = $1", [userID]);
         // if current user's email does not match account to be updated
         if (email != user.rows[0].email)
             return res.status(401).json("Email does not match account to be updated");
         // if current user's password does not match account to be updated
         const isMatch = yield bcryptjs.compare(password, user.rows[0].password);
         if (!isMatch)
-            return res.status(401).json({ msg: 'Incorrect password' });
+            return res.status(401).json({ msg: "Incorrect password" });
         // salt for hashing password
         const salt = yield bcryptjs.genSalt(10);
         // set fields equal to either new values specified in request or original user values
         name = name ? name : user.rows[0].name;
-        password = new_password ? yield bcryptjs.hash(new_password, salt) : user.rows[0].password;
+        password = new_password
+            ? yield bcryptjs.hash(new_password, salt)
+            : user.rows[0].password;
         phone_num = phone_num ? phone_num : user.rows[0].phone_num;
         date_of_birth = date_of_birth ? date_of_birth : user.rows[0].date_of_birth;
         race = race ? race : user.rows[0].race;
         gender = gender ? gender : user.rows[0].gender;
         address = address ? address : user.rows[0].address;
-        employment_status = employment_status ? employment_status : user.rows[0].employment_status;
-        military_affiliated = military_affiliated ? military_affiliated : user.rows[0].military_affiliated;
-        military_affiliation = military_affiliation ? military_affiliation : user.rows[0].military_affiliation;
-        military_start_date = military_start_date ? military_start_date : user.rows[0].military_start_date;
-        military_end_date = military_end_date ? military_end_date : user.rows[0].military_end_date;
+        employment_status = employment_status
+            ? employment_status
+            : user.rows[0].employment_status;
+        military_affiliated = military_affiliated
+            ? military_affiliated
+            : user.rows[0].military_affiliated;
+        military_affiliation = military_affiliation
+            ? military_affiliation
+            : user.rows[0].military_affiliation;
+        military_start_date = military_start_date
+            ? military_start_date
+            : user.rows[0].military_start_date;
+        military_end_date = military_end_date
+            ? military_end_date
+            : user.rows[0].military_end_date;
         last_rank = last_rank ? last_rank : user.rows[0].last_rank;
-        military_speciality = military_speciality ? military_speciality : user.rows[0].military_speciality;
-        household_size = household_size ? household_size : user.rows[0].household_size;
+        military_speciality = military_speciality
+            ? military_speciality
+            : user.rows[0].military_speciality;
+        household_size = household_size
+            ? household_size
+            : user.rows[0].household_size;
         income = income ? income : user.rows[0].income;
-        current_course = current_course ? current_course : user.rows[0].current_course;
-        completed_courses = completed_courses ? completed_courses : user.rows[0].completed_courses;
-        referral_source = referral_source ? referral_source : user.rows[0].referral_source;
+        current_course = current_course
+            ? current_course
+            : user.rows[0].current_course;
+        completed_courses = completed_courses
+            ? completed_courses
+            : user.rows[0].completed_courses;
+        referral_source = referral_source
+            ? referral_source
+            : user.rows[0].referral_source;
         resources = resources ? resources : user.rows[0].resources;
-        yield database_1.pool.query('UPDATE users SET name = $1, email = $2, password = $3, phone_num = $4, date_of_birth = $5, race = $6, gender = $7, address = $8, employment_status = $9, military_affiliated = $10, military_affiliation = $11, military_start_date = $12, military_end_date = $13, last_rank = $14, military_speciality = $15, household_size = $16, income = $17, current_course = $18, completed_courses = $19, referral_source = $20, resources = $21 WHERE id = $22', [name, email, password, phone_num, date_of_birth, race, gender, address, employment_status,
-            military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank,
-            military_speciality, household_size, income, current_course, completed_courses, referral_source, resources, userID]);
-        return res.json('User ' + userID + ' updated succesfully');
+        yield database_1.pool.query("UPDATE users SET name = $1, email = $2, password = $3, phone_num = $4, date_of_birth = $5, race = $6, gender = $7, address = $8, employment_status = $9, military_affiliated = $10, military_affiliation = $11, military_start_date = $12, military_end_date = $13, last_rank = $14, military_speciality = $15, household_size = $16, income = $17, current_course = $18, completed_courses = $19, referral_source = $20, resources = $21 WHERE id = $22", [
+            name,
+            email,
+            password,
+            phone_num,
+            date_of_birth,
+            race,
+            gender,
+            address,
+            employment_status,
+            military_affiliated,
+            military_affiliation,
+            military_start_date,
+            military_end_date,
+            last_rank,
+            military_speciality,
+            household_size,
+            income,
+            current_course,
+            completed_courses,
+            referral_source,
+            resources,
+            userID,
+        ]);
+        return res.json("User " + userID + " updated succesfully");
     }
     catch (e) {
         console.log(e);
-        return res.status(500).json('Internal Server Error');
+        return res.status(500).json("Internal Server Error");
     }
 });
+exports.updateUserPassword = updateUserPassword;
+const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userID = parseInt(req.params.userID);
+    var { name, email, password, new_password, phone_num, date_of_birth, race, gender, address, employment_status, military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank, military_speciality, household_size, income, current_course, completed_courses, referral_source, resources, } = req.body;
+    // ensure required fields were entered
+    if (!email || !password)
+        return res.status(400).json("Please enter required fields!");
+    try {
+        // retrive user to-be-updated object
+        const user = yield database_1.pool.query("Select * FROM users WHERE id = $1", [userID]);
+        // if current user's email does not match account to be updated
+        if (email != user.rows[0].email)
+            return res.status(401).json("Email does not match account to be updated");
+        // if current user's password does not match account to be updated
+        const isMatch = yield bcryptjs.compare(password, user.rows[0].password);
+        if (!isMatch)
+            return res.status(401).json({ msg: "Incorrect password" });
+        // salt for hashing password
+        const salt = yield bcryptjs.genSalt(10);
+        // set fields equal to either new values specified in request or original user values
+        name = name ? name : user.rows[0].name;
+        password = new_password
+            ? yield bcryptjs.hash(new_password, salt)
+            : user.rows[0].password;
+        phone_num = phone_num ? phone_num : user.rows[0].phone_num;
+        date_of_birth = date_of_birth ? date_of_birth : user.rows[0].date_of_birth;
+        race = race ? race : user.rows[0].race;
+        gender = gender ? gender : user.rows[0].gender;
+        address = address ? address : user.rows[0].address;
+        employment_status = employment_status
+            ? employment_status
+            : user.rows[0].employment_status;
+        military_affiliated = military_affiliated
+            ? military_affiliated
+            : user.rows[0].military_affiliated;
+        military_affiliation = military_affiliation
+            ? military_affiliation
+            : user.rows[0].military_affiliation;
+        military_start_date = military_start_date
+            ? military_start_date
+            : user.rows[0].military_start_date;
+        military_end_date = military_end_date
+            ? military_end_date
+            : user.rows[0].military_end_date;
+        last_rank = last_rank ? last_rank : user.rows[0].last_rank;
+        military_speciality = military_speciality
+            ? military_speciality
+            : user.rows[0].military_speciality;
+        household_size = household_size
+            ? household_size
+            : user.rows[0].household_size;
+        income = income ? income : user.rows[0].income;
+        current_course = current_course
+            ? current_course
+            : user.rows[0].current_course;
+        completed_courses = completed_courses
+            ? completed_courses
+            : user.rows[0].completed_courses;
+        referral_source = referral_source
+            ? referral_source
+            : user.rows[0].referral_source;
+        resources = resources ? resources : user.rows[0].resources;
+        yield database_1.pool.query("UPDATE users SET name = $1, email = $2, password = $3, phone_num = $4, date_of_birth = $5, race = $6, gender = $7, address = $8, employment_status = $9, military_affiliated = $10, military_affiliation = $11, military_start_date = $12, military_end_date = $13, last_rank = $14, military_speciality = $15, household_size = $16, income = $17, current_course = $18, completed_courses = $19, referral_source = $20, resources = $21 WHERE id = $22", [
+            name,
+            email,
+            password,
+            phone_num,
+            date_of_birth,
+            race,
+            gender,
+            address,
+            employment_status,
+            military_affiliated,
+            military_affiliation,
+            military_start_date,
+            military_end_date,
+            last_rank,
+            military_speciality,
+            household_size,
+            income,
+            current_course,
+            completed_courses,
+            referral_source,
+            resources,
+            userID,
+        ]);
+        return res.json("User " + userID + " updated succesfully");
+    }
+    catch (e) {
+        console.log(e);
+        return res.status(500).json("Internal Server Error");
+    }
+});
+exports.updateUser = updateUser;
 // delete user (USER/ ADMIN FUNCTION)
-exports.deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userID = parseInt(req.params.userID);
     const { email, password } = req.body;
     // ensure required fields were entered
     if (!email || !password)
-        return res.status(200).json("Please enter required fields!");
+        return res.status(400).json("Please enter required fields!");
     try {
         // retrive user to-be-deleted object
         const user = yield database_1.pool.query('Select * FROM users WHERE id = $1', [userID]);
@@ -165,12 +310,16 @@ exports.deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const isMatch = yield bcryptjs.compare(password, user.rows[0].password);
         if (!isMatch)
             return res.status(401).json({ msg: 'Incorrect password' });
-        // auth was succesful so delete user
+        // delete rows in grades and feedback table that are referencing user
+        yield database_1.pool.query('DELETE FROM user_grades WHERE user_id = $1', [userID]);
+        yield database_1.pool.query('DELETE FROM user_feedback WHERE user_id = $1', [userID]);
+        // delete user
         yield database_1.pool.query('DELETE FROM users WHERE id = $1', [userID]);
-        return res.json('User ' + userID + ' account deleted succesfully');
+        return res.status(200).json('User ' + userID + ' account deleted succesfully');
     }
     catch (e) {
         console.log(e);
         return res.status(500).json('Internal Server Error');
     }
 });
+exports.deleteUser = deleteUser;
