@@ -1,4 +1,4 @@
-import {Request, Response} from 'express'
+import { Request, Response } from 'express'
 import { pool } from '../database'
 import { QueryResult } from 'pg';
 const bcryptjs = require('bcryptjs');
@@ -10,7 +10,7 @@ export const getUsers = async (req: Request, res: Response): Promise<Response> =
         const response: QueryResult = await pool.query('Select date_of_birth, race, gender, address, employment_status, military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank, military_speciality, household_size, income, current_course, completed_courses, referral_source, resources FROM users');
         return res.status(200).json(response.rows);
     }
-    catch(e) {
+    catch (e) {
         console.log(e);
         return res.status(500).json('Internal Server Error');
     }
@@ -44,7 +44,7 @@ export const getUser = async (req: Request, res: Response): Promise<Response> =>
 
         return res.status(200).json(user.rows);
     }
-    catch(e) {
+    catch (e) {
         console.log(e);
         return res.status(500).json('Internal Server Error');
     }
@@ -52,9 +52,9 @@ export const getUser = async (req: Request, res: Response): Promise<Response> =>
 
 // register user (USER FUNCTION)
 export const createUser = async (req: Request, res: Response): Promise<Response> => {
-    var {name, email, password, phone_num, date_of_birth, race, gender, address, employment_status,
+    var { name, email, password, phone_num, date_of_birth, race, gender, address, employment_status,
         military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank,
-        military_speciality, household_size, income, current_course, completed_courses, referral_source, resources} = req.body;
+        military_speciality, household_size, income, current_course, completed_courses, referral_source, resources } = req.body;
 
     // ensure required fields were entered
     if (!email || !password)
@@ -71,15 +71,15 @@ export const createUser = async (req: Request, res: Response): Promise<Response>
         password = await bcryptjs.hash(password, salt);
 
         // create record in users DB
-        await pool.query('INSERT INTO users (name, email, password, phone_num, date_of_birth, race, gender, address, employment_status, military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank, military_speciality, household_size, income, current_course, completed_courses, referral_source, resources) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)', 
-        [name, email, password, phone_num, date_of_birth, race, gender, address, employment_status,
-            military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank,
-            military_speciality, household_size, income, current_course, completed_courses, referral_source, resources]);
-        
+        await pool.query('INSERT INTO users (name, email, password, phone_num, date_of_birth, race, gender, address, employment_status, military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank, military_speciality, household_size, income, current_course, completed_courses, referral_source, resources) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)',
+            [name, email, password, phone_num, date_of_birth, race, gender, address, employment_status,
+                military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank,
+                military_speciality, household_size, income, current_course, completed_courses, referral_source, resources]);
+
         const newUser: QueryResult = await pool.query('Select * FROM users WHERE email = $1', [email]);
         return res.status(200).json(newUser.rows);
     }
-    catch(e) {
+    catch (e) {
         console.log(e);
         return res.status(500).json('Internal Server Error');
     }
@@ -107,12 +107,18 @@ export const signInUser = async (req: Request, res: Response): Promise<Response>
             user.rows[0].password
         );
 
-        if (isMatch)
-            return res.status(200).json(user.rows);
+        if (isMatch) {
+            // TODO: Update signInUser function on backend to not return hashed password - security risk
+            // return all except password
+            delete user.rows[0].password;
+
+            return res.status(200).json(user.rows[0]);
+        }
+            
         else
             return res.status(401).json({ msg: 'Incorrect password' });
     }
-    catch(e) {
+    catch (e) {
         console.log(e);
         return res.status(500).json('Internal Server Error');
     }
@@ -120,111 +126,15 @@ export const signInUser = async (req: Request, res: Response): Promise<Response>
 
 // update user details (USER FUNCTION)
 export const updateUserPassword = async (
-  req: Request,
-  res: Response
+    req: Request,
+    res: Response
 ): Promise<Response> => {
-  const userID = parseInt(req.params.userID);
-  var {
-    name,
-    email,
-    password,
-    new_password,
-    phone_num,
-    date_of_birth,
-    race,
-    gender,
-    address,
-    employment_status,
-    military_affiliated,
-    military_affiliation,
-    military_start_date,
-    military_end_date,
-    last_rank,
-    military_speciality,
-    household_size,
-    income,
-    current_course,
-    completed_courses,
-    referral_source,
-    resources,
-  } = req.body;
-
-  // ensure required fields were entered
-  if (!email || !password)
-    return res.status(400).json("Please enter required fields!");
-
-  try {
-    // retrive user to-be-updated object
-    const user: QueryResult = await pool.query(
-      "Select * FROM users WHERE id = $1",
-      [userID]
-    );
-
-    // if current user's email does not match account to be updated
-    if (email != user.rows[0].email)
-      return res.status(401).json("Email does not match account to be updated");
-
-    // if current user's password does not match account to be updated
-    const isMatch: boolean = await bcryptjs.compare(
-      password,
-      user.rows[0].password
-    );
-
-    if (!isMatch) return res.status(401).json({ msg: "Incorrect password" });
-
-    // salt for hashing password
-    const salt = await bcryptjs.genSalt(10);
-
-    // set fields equal to either new values specified in request or original user values
-    name = name ? name : user.rows[0].name;
-    password = new_password
-      ? await bcryptjs.hash(new_password, salt)
-      : user.rows[0].password;
-    phone_num = phone_num ? phone_num : user.rows[0].phone_num;
-    date_of_birth = date_of_birth ? date_of_birth : user.rows[0].date_of_birth;
-    race = race ? race : user.rows[0].race;
-    gender = gender ? gender : user.rows[0].gender;
-    address = address ? address : user.rows[0].address;
-    employment_status = employment_status
-      ? employment_status
-      : user.rows[0].employment_status;
-    military_affiliated = military_affiliated
-      ? military_affiliated
-      : user.rows[0].military_affiliated;
-    military_affiliation = military_affiliation
-      ? military_affiliation
-      : user.rows[0].military_affiliation;
-    military_start_date = military_start_date
-      ? military_start_date
-      : user.rows[0].military_start_date;
-    military_end_date = military_end_date
-      ? military_end_date
-      : user.rows[0].military_end_date;
-    last_rank = last_rank ? last_rank : user.rows[0].last_rank;
-    military_speciality = military_speciality
-      ? military_speciality
-      : user.rows[0].military_speciality;
-    household_size = household_size
-      ? household_size
-      : user.rows[0].household_size;
-    income = income ? income : user.rows[0].income;
-    current_course = current_course
-      ? current_course
-      : user.rows[0].current_course;
-    completed_courses = completed_courses
-      ? completed_courses
-      : user.rows[0].completed_courses;
-    referral_source = referral_source
-      ? referral_source
-      : user.rows[0].referral_source;
-    resources = resources ? resources : user.rows[0].resources;
-
-    await pool.query(
-      "UPDATE users SET name = $1, email = $2, password = $3, phone_num = $4, date_of_birth = $5, race = $6, gender = $7, address = $8, employment_status = $9, military_affiliated = $10, military_affiliation = $11, military_start_date = $12, military_end_date = $13, last_rank = $14, military_speciality = $15, household_size = $16, income = $17, current_course = $18, completed_courses = $19, referral_source = $20, resources = $21 WHERE id = $22",
-      [
+    const userID = parseInt(req.params.userID);
+    var {
         name,
         email,
         password,
+        new_password,
         phone_num,
         date_of_birth,
         race,
@@ -243,122 +153,122 @@ export const updateUserPassword = async (
         completed_courses,
         referral_source,
         resources,
-        userID,
-      ]
-    );
-    return res.json("User " + userID + " updated succesfully");
-  } catch (e) {
-    console.log(e);
-    return res.status(500).json("Internal Server Error");
-  }
+    } = req.body;
+
+    // ensure required fields were entered
+    if (!email || !password)
+        return res.status(400).json("Please enter required fields!");
+
+    try {
+        // retrive user to-be-updated object
+        const user: QueryResult = await pool.query(
+            "Select * FROM users WHERE id = $1",
+            [userID]
+        );
+
+        // if current user's email does not match account to be updated
+        if (email != user.rows[0].email)
+            return res.status(401).json("Email does not match account to be updated");
+
+        // if current user's password does not match account to be updated
+        const isMatch: boolean = await bcryptjs.compare(
+            password,
+            user.rows[0].password
+        );
+
+        if (!isMatch) return res.status(401).json({ msg: "Incorrect password" });
+
+        // salt for hashing password
+        const salt = await bcryptjs.genSalt(10);
+
+        // set fields equal to either new values specified in request or original user values
+        name = name ? name : user.rows[0].name;
+        password = new_password
+            ? await bcryptjs.hash(new_password, salt)
+            : user.rows[0].password;
+        phone_num = phone_num ? phone_num : user.rows[0].phone_num;
+        date_of_birth = date_of_birth ? date_of_birth : user.rows[0].date_of_birth;
+        race = race ? race : user.rows[0].race;
+        gender = gender ? gender : user.rows[0].gender;
+        address = address ? address : user.rows[0].address;
+        employment_status = employment_status
+            ? employment_status
+            : user.rows[0].employment_status;
+        military_affiliated = military_affiliated
+            ? military_affiliated
+            : user.rows[0].military_affiliated;
+        military_affiliation = military_affiliation
+            ? military_affiliation
+            : user.rows[0].military_affiliation;
+        military_start_date = military_start_date
+            ? military_start_date
+            : user.rows[0].military_start_date;
+        military_end_date = military_end_date
+            ? military_end_date
+            : user.rows[0].military_end_date;
+        last_rank = last_rank ? last_rank : user.rows[0].last_rank;
+        military_speciality = military_speciality
+            ? military_speciality
+            : user.rows[0].military_speciality;
+        household_size = household_size
+            ? household_size
+            : user.rows[0].household_size;
+        income = income ? income : user.rows[0].income;
+        current_course = current_course
+            ? current_course
+            : user.rows[0].current_course;
+        completed_courses = completed_courses
+            ? completed_courses
+            : user.rows[0].completed_courses;
+        referral_source = referral_source
+            ? referral_source
+            : user.rows[0].referral_source;
+        resources = resources ? resources : user.rows[0].resources;
+
+        await pool.query(
+            "UPDATE users SET name = $1, email = $2, password = $3, phone_num = $4, date_of_birth = $5, race = $6, gender = $7, address = $8, employment_status = $9, military_affiliated = $10, military_affiliation = $11, military_start_date = $12, military_end_date = $13, last_rank = $14, military_speciality = $15, household_size = $16, income = $17, current_course = $18, completed_courses = $19, referral_source = $20, resources = $21 WHERE id = $22",
+            [
+                name,
+                email,
+                password,
+                phone_num,
+                date_of_birth,
+                race,
+                gender,
+                address,
+                employment_status,
+                military_affiliated,
+                military_affiliation,
+                military_start_date,
+                military_end_date,
+                last_rank,
+                military_speciality,
+                household_size,
+                income,
+                current_course,
+                completed_courses,
+                referral_source,
+                resources,
+                userID,
+            ]
+        );
+        return res.json("User " + userID + " updated succesfully");
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json("Internal Server Error");
+    }
 };
 
 export const updateUser = async (
-  req: Request,
-  res: Response
+    req: Request,
+    res: Response
 ): Promise<Response> => {
-  const userID = parseInt(req.params.userID);
-  var {
-    name,
-    email,
-    password,
-    new_password,
-    phone_num,
-    date_of_birth,
-    race,
-    gender,
-    address,
-    employment_status,
-    military_affiliated,
-    military_affiliation,
-    military_start_date,
-    military_end_date,
-    last_rank,
-    military_speciality,
-    household_size,
-    income,
-    current_course,
-    completed_courses,
-    referral_source,
-    resources,
-  } = req.body;
-
-  // ensure required fields were entered
-  if (!email || !password)
-    return res.status(400).json("Please enter required fields!");
-
-  try {
-    // retrive user to-be-updated object
-    const user: QueryResult = await pool.query(
-      "Select * FROM users WHERE id = $1",
-      [userID]
-    );
-
-    // if current user's email does not match account to be updated
-    if (email != user.rows[0].email)
-      return res.status(401).json("Email does not match account to be updated");
-
-    // if current user's password does not match account to be updated
-    const isMatch: boolean = await bcryptjs.compare(
-      password,
-      user.rows[0].password
-    );
-
-    if (!isMatch) return res.status(401).json({ msg: "Incorrect password" });
-
-    // salt for hashing password
-    const salt = await bcryptjs.genSalt(10);
-
-    // set fields equal to either new values specified in request or original user values
-    name = name ? name : user.rows[0].name;
-    password = new_password
-      ? await bcryptjs.hash(new_password, salt)
-      : user.rows[0].password;
-    phone_num = phone_num ? phone_num : user.rows[0].phone_num;
-    date_of_birth = date_of_birth ? date_of_birth : user.rows[0].date_of_birth;
-    race = race ? race : user.rows[0].race;
-    gender = gender ? gender : user.rows[0].gender;
-    address = address ? address : user.rows[0].address;
-    employment_status = employment_status
-      ? employment_status
-      : user.rows[0].employment_status;
-    military_affiliated = military_affiliated
-      ? military_affiliated
-      : user.rows[0].military_affiliated;
-    military_affiliation = military_affiliation
-      ? military_affiliation
-      : user.rows[0].military_affiliation;
-    military_start_date = military_start_date
-      ? military_start_date
-      : user.rows[0].military_start_date;
-    military_end_date = military_end_date
-      ? military_end_date
-      : user.rows[0].military_end_date;
-    last_rank = last_rank ? last_rank : user.rows[0].last_rank;
-    military_speciality = military_speciality
-      ? military_speciality
-      : user.rows[0].military_speciality;
-    household_size = household_size
-      ? household_size
-      : user.rows[0].household_size;
-    income = income ? income : user.rows[0].income;
-    current_course = current_course
-      ? current_course
-      : user.rows[0].current_course;
-    completed_courses = completed_courses
-      ? completed_courses
-      : user.rows[0].completed_courses;
-    referral_source = referral_source
-      ? referral_source
-      : user.rows[0].referral_source;
-    resources = resources ? resources : user.rows[0].resources;
-
-    await pool.query(
-      "UPDATE users SET name = $1, email = $2, password = $3, phone_num = $4, date_of_birth = $5, race = $6, gender = $7, address = $8, employment_status = $9, military_affiliated = $10, military_affiliation = $11, military_start_date = $12, military_end_date = $13, last_rank = $14, military_speciality = $15, household_size = $16, income = $17, current_course = $18, completed_courses = $19, referral_source = $20, resources = $21 WHERE id = $22",
-      [
+    const userID = parseInt(req.params.userID);
+    var {
         name,
         email,
         password,
+        new_password,
         phone_num,
         date_of_birth,
         race,
@@ -377,14 +287,110 @@ export const updateUser = async (
         completed_courses,
         referral_source,
         resources,
-        userID,
-      ]
-    );
-    return res.json("User " + userID + " updated succesfully");
-  } catch (e) {
-    console.log(e);
-    return res.status(500).json("Internal Server Error");
-  }
+    } = req.body;
+
+    // ensure required fields were entered
+    if (!email || !password)
+        return res.status(400).json("Please enter required fields!");
+
+    try {
+        // retrive user to-be-updated object
+        const user: QueryResult = await pool.query(
+            "Select * FROM users WHERE id = $1",
+            [userID]
+        );
+
+        // if current user's email does not match account to be updated
+        if (email != user.rows[0].email)
+            return res.status(401).json("Email does not match account to be updated");
+
+        // if current user's password does not match account to be updated
+        const isMatch: boolean = await bcryptjs.compare(
+            password,
+            user.rows[0].password
+        );
+
+        if (!isMatch) return res.status(401).json({ msg: "Incorrect password" });
+
+        // salt for hashing password
+        const salt = await bcryptjs.genSalt(10);
+
+        // set fields equal to either new values specified in request or original user values
+        name = name ? name : user.rows[0].name;
+        password = new_password
+            ? await bcryptjs.hash(new_password, salt)
+            : user.rows[0].password;
+        phone_num = phone_num ? phone_num : user.rows[0].phone_num;
+        date_of_birth = date_of_birth ? date_of_birth : user.rows[0].date_of_birth;
+        race = race ? race : user.rows[0].race;
+        gender = gender ? gender : user.rows[0].gender;
+        address = address ? address : user.rows[0].address;
+        employment_status = employment_status
+            ? employment_status
+            : user.rows[0].employment_status;
+        military_affiliated = military_affiliated
+            ? military_affiliated
+            : user.rows[0].military_affiliated;
+        military_affiliation = military_affiliation
+            ? military_affiliation
+            : user.rows[0].military_affiliation;
+        military_start_date = military_start_date
+            ? military_start_date
+            : user.rows[0].military_start_date;
+        military_end_date = military_end_date
+            ? military_end_date
+            : user.rows[0].military_end_date;
+        last_rank = last_rank ? last_rank : user.rows[0].last_rank;
+        military_speciality = military_speciality
+            ? military_speciality
+            : user.rows[0].military_speciality;
+        household_size = household_size
+            ? household_size
+            : user.rows[0].household_size;
+        income = income ? income : user.rows[0].income;
+        current_course = current_course
+            ? current_course
+            : user.rows[0].current_course;
+        completed_courses = completed_courses
+            ? completed_courses
+            : user.rows[0].completed_courses;
+        referral_source = referral_source
+            ? referral_source
+            : user.rows[0].referral_source;
+        resources = resources ? resources : user.rows[0].resources;
+
+        await pool.query(
+            "UPDATE users SET name = $1, email = $2, password = $3, phone_num = $4, date_of_birth = $5, race = $6, gender = $7, address = $8, employment_status = $9, military_affiliated = $10, military_affiliation = $11, military_start_date = $12, military_end_date = $13, last_rank = $14, military_speciality = $15, household_size = $16, income = $17, current_course = $18, completed_courses = $19, referral_source = $20, resources = $21 WHERE id = $22",
+            [
+                name,
+                email,
+                password,
+                phone_num,
+                date_of_birth,
+                race,
+                gender,
+                address,
+                employment_status,
+                military_affiliated,
+                military_affiliation,
+                military_start_date,
+                military_end_date,
+                last_rank,
+                military_speciality,
+                household_size,
+                income,
+                current_course,
+                completed_courses,
+                referral_source,
+                resources,
+                userID,
+            ]
+        );
+        return res.json("User " + userID + " updated succesfully");
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json("Internal Server Error");
+    }
 };
 
 // delete user (USER/ ADMIN FUNCTION)
@@ -414,15 +420,15 @@ export const deleteUser = async (req: Request, res: Response): Promise<Response>
             return res.status(401).json({ msg: 'Incorrect password' });
 
         // delete rows in grades and feedback table that are referencing user
-        await pool.query('DELETE FROM user_grades WHERE user_id = $1', [userID]); 
-        await pool.query('DELETE FROM user_feedback WHERE user_id = $1', [userID]); 
+        await pool.query('DELETE FROM user_grades WHERE user_id = $1', [userID]);
+        await pool.query('DELETE FROM user_feedback WHERE user_id = $1', [userID]);
 
         // delete user
-        await pool.query('DELETE FROM users WHERE id = $1', [userID]); 
+        await pool.query('DELETE FROM users WHERE id = $1', [userID]);
 
         return res.status(200).json('User ' + userID + ' account deleted succesfully');
     }
-    catch(e) {
+    catch (e) {
         console.log(e);
         return res.status(500).json('Internal Server Error');
     }
