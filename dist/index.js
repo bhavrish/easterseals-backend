@@ -26,9 +26,11 @@ const express_1 = __importDefault(require("express"));
 const dotenv = __importStar(require("dotenv"));
 const index_1 = __importDefault(require("./routes/index"));
 dotenv.config();
-const app = express_1.default();
+const app = (0, express_1.default)();
 const PORT = process.env.PORT || 4000;
 // middlewares
 app.use(express_1.default.json());
 app.use(index_1.default);
-app.listen(PORT);
+app.listen(PORT, function () {
+    console.log("listening on port " + PORT);
+});
