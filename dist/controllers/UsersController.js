@@ -201,28 +201,17 @@ const updateUserPassword = (req, res) => __awaiter(void 0, void 0, void 0, funct
 });
 exports.updateUserPassword = updateUserPassword;
 const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userID = parseInt(req.params.userID);
-    var { name, email, password, new_password, phone_num, date_of_birth, race, gender, address, employment_status, military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank, military_speciality, household_size, income, current_course, completed_courses, referral_source, resources, } = req.body;
-    // ensure required fields were entered
-    if (!email || !password)
+    if (!req.params.userID) {
         return res.status(400).json("Please enter required fields!");
+    }
+    const userID = parseInt(req.params.userID);
+    var { name, email, new_password, phone_num, date_of_birth, race, gender, address, employment_status, military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank, military_speciality, household_size, income, current_course, completed_courses, referral_source, resources, } = req.body;
     try {
         // retrive user to-be-updated object
         const user = yield database_1.pool.query("Select * FROM users WHERE id = $1", [userID]);
-        // if current user's email does not match account to be updated
-        if (email != user.rows[0].email)
-            return res.status(401).json("Email does not match account to be updated");
-        // if current user's password does not match account to be updated
-        const isMatch = yield bcryptjs.compare(password, user.rows[0].password);
-        if (!isMatch)
-            return res.status(401).json({ msg: "Incorrect password" });
-        // salt for hashing password
-        const salt = yield bcryptjs.genSalt(10);
         // set fields equal to either new values specified in request or original user values
         name = name ? name : user.rows[0].name;
-        password = new_password
-            ? yield bcryptjs.hash(new_password, salt)
-            : user.rows[0].password;
+        const password = user.rows[0].password;
         phone_num = phone_num ? phone_num : user.rows[0].phone_num;
         date_of_birth = date_of_birth ? date_of_birth : user.rows[0].date_of_birth;
         race = race ? race : user.rows[0].race;
