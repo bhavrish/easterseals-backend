@@ -38,20 +38,38 @@ const getCourseFeedback = (req, res) => __awaiter(void 0, void 0, void 0, functi
 exports.getCourseFeedback = getCourseFeedback;
 // post new feedback about course (USER FUNCTION)
 const postFeedback = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { rating, feedback, user_id, course_id } = req.body;
+    const { rating, question, user_id, course_id } = req.body;
     try {
-        yield database_1.pool.query('INSERT INTO user_feedback (rating, feedback, user_id, course_id) VALUES ($1, $2, $3, $4)', [rating, feedback, user_id, course_id]);
-        return res.json({
-            message: 'Feedback posted succesfully',
-            body: {
-                course_feedback: {
-                    rating,
-                    feedback,
-                    user_id,
-                    course_id
+        // check if user has given feedback for course before
+        const feedback = yield database_1.pool.query('Select * FROM user_feedback WHERE user_id = $1 AND course_id = $2 AND question = $3', [user_id, course_id, question]);
+        if (feedback.rowCount > 0) {
+            yield database_1.pool.query('UPDATE user_feedback SET rating = $1 WHERE user_id = $2 AND course_id = $3 AND question = $4', [rating, user_id, course_id, question]);
+            return res.json({
+                message: 'Feedback updated succesfully',
+                body: {
+                    course_feedback: {
+                        rating,
+                        question,
+                        user_id,
+                        course_id
+                    }
                 }
-            }
-        });
+            });
+        }
+        else {
+            yield database_1.pool.query('INSERT INTO user_feedback (rating, question, user_id, course_id) VALUES ($1, $2, $3, $4)', [rating, question, user_id, course_id]);
+            return res.json({
+                message: 'Feedback posted succesfully',
+                body: {
+                    course_feedback: {
+                        rating,
+                        question,
+                        user_id,
+                        course_id
+                    }
+                }
+            });
+        }
     }
     catch (e) {
         console.log(e);

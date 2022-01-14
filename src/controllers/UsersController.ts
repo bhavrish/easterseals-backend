@@ -61,10 +61,10 @@ export const createUser = async (req: Request, res: Response): Promise<Response>
         return res.status(400).json("Please enter required fields!");
 
     try {
-        // check if username already exists
+        // check if email already exists
         const user: QueryResult = await pool.query('Select * FROM users WHERE email = $1', [email]);
         if (user.rowCount > 0)
-            return res.status(404).json("Username already exists!");
+            return res.status(404).json("Email already exists!");
 
         // hash password
         const salt = await bcryptjs.genSalt(10);
@@ -99,7 +99,7 @@ export const signInUser = async (req: Request, res: Response): Promise<Response>
 
         // if current user's email does not exist
         if (user.rowCount == 0)
-            return res.status(401).json("Username does not exist");
+            return res.status(401).json("Email does not exist");
 
         // if current user's password does not match account to be logged in
         const isMatch: boolean = await bcryptjs.compare(

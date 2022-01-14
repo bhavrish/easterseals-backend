@@ -35,10 +35,11 @@ CREATE TABLE user_grades(
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (course_id) REFERENCES courses (id)
 );
+
 CREATE TABLE user_feedback(
     id SERIAL PRIMARY KEY,
     rating DECIMAL,
-    feedback TEXT,
+    question TEXT,
     user_id SERIAL NOT NULL,
     course_id SERIAL NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id),
