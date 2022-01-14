@@ -57,7 +57,7 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     if (!email || !password)
         return res.status(400).json("Please enter required fields!");
     try {
-        // check if username already exists
+        // check if email already exists
         const user = yield database_1.pool.query('Select * FROM users WHERE email = $1', [email]);
         if (user.rowCount > 0)
             return res.status(404).json("Email already exists!");
@@ -88,7 +88,7 @@ const signInUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         const user = yield database_1.pool.query('Select * FROM users WHERE email = $1', [email]);
         // if current user's email does not exist
         if (user.rowCount == 0)
-            return res.status(401).json("Username does not exist");
+            return res.status(401).json("Email does not exist");
         // if current user's password does not match account to be logged in
         const isMatch = yield bcryptjs.compare(password, user.rows[0].password);
         if (isMatch) {
