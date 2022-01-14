@@ -60,7 +60,7 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         // check if username already exists
         const user = yield database_1.pool.query('Select * FROM users WHERE email = $1', [email]);
         if (user.rowCount > 0)
-            return res.status(404).json("Username already exists!");
+            return res.status(404).json("Email already exists!");
         // hash password
         const salt = yield bcryptjs.genSalt(10);
         password = yield bcryptjs.hash(password, salt);
