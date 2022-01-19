@@ -60,15 +60,22 @@ exports.saveProgress = saveProgress;
 // update an existing user course progress
 const updateProgress = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user_id = parseInt(req.params.userID);
-    const { progression, course_id } = req.body;
+    const { progression, course_id, total_pages } = req.body; //send total_pages from the front-end
     if (!user_id || !progression || !course_id) {
         return res.status(422).json({
             error: "Missing field",
         });
     }
     try {
-        // update the progression value in database using record that matches the user_id and course_id
-        yield database_1.pool.query("UPDATE course_progress SET progression = $1 WHERE user_id = $2 AND course_id = $3", [progression, user_id, course_id]);
+        // check if user has completed the course
+        if (progression == total_pages) {
+            yield database_1.pool.query("UPDATE course_progress SET progression = $1, date_completed = CURRENT_DATE WHERE user_id = $2 AND course_id = $3", [progression, user_id, course_id]);
+        }
+        // user has not yet completed course
+        else {
+            // update the progression value in database using record that matches the user_id and course_id
+            yield database_1.pool.query("UPDATE course_progress SET progression = $1 WHERE user_id = $2 AND course_id = $3", [progression, user_id, course_id]);
+        }
         return res.json("Progress updated for " + course_id + " course for user " + user_id);
     }
     catch (e) {
