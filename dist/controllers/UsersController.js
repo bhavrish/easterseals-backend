@@ -92,7 +92,6 @@ const signInUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         // if current user's password does not match account to be logged in
         const isMatch = yield bcryptjs.compare(password, user.rows[0].password);
         if (isMatch) {
-            // TODO: Update signInUser function on backend to not return hashed password - security risk
             // return all except password
             delete user.rows[0].password;
             return res.status(200).json(user.rows[0]);

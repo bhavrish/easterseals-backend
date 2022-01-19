@@ -2,8 +2,6 @@ import { Request, Response } from 'express'
 import { pool } from '../database'
 import { QueryResult } from 'pg';
 
-// TODO: Endpoints for saving a progress tasks & getting all progress for a specific user
-
 // get progess of all courses for a specific user
 export const getUserProgress = async (
   req: Request,

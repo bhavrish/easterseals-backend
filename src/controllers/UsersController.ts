@@ -108,7 +108,6 @@ export const signInUser = async (req: Request, res: Response): Promise<Response>
         );
 
         if (isMatch) {
-            // TODO: Update signInUser function on backend to not return hashed password - security risk
             // return all except password
             delete user.rows[0].password;
 

@@ -11,7 +11,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateProgress = exports.saveProgress = exports.getUserProgress = void 0;
 const database_1 = require("../database");
-// TODO: Endpoints for saving a progress tasks & getting all progress for a specific user
 // get progess of all courses for a specific user
 const getUserProgress = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user_id = parseInt(req.params.userID);
