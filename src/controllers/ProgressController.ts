@@ -92,9 +92,8 @@ export const updateProgress = async (
             );
         }
 
-
         return res.json(
-            "Progress updated for " + course_id + " course for user " + user_id
+            "Progress updated for course" + course_id + " for user " + user_id
         );
     } catch (e) {
         console.log(e);

@@ -76,7 +76,7 @@ const updateProgress = (req, res) => __awaiter(void 0, void 0, void 0, function*
             // update the progression value in database using record that matches the user_id and course_id
             yield database_1.pool.query("UPDATE course_progress SET progression = $1 WHERE user_id = $2 AND course_id = $3", [progression, user_id, course_id]);
         }
-        return res.json("Progress updated for " + course_id + " course for user " + user_id);
+        return res.json("Progress updated for course" + course_id + " for user " + user_id);
     }
     catch (e) {
         console.log(e);
