@@ -32,7 +32,6 @@ export const saveProgress = async (
     res: Response
 ): Promise<Response> => {
     const { progression, total_pages, user_id, course_id } = req.body;
-
     if (!progression || !total_pages || !user_id || !course_id) {
         return res.status(400).json({
             message: "Please provide all required fields",
@@ -45,9 +44,9 @@ export const saveProgress = async (
             [progression, total_pages, user_id, course_id]
         );
         return res.json({
-            message: "Progress saved succesfully",
+            message: "Progress saved successfully",
             body: {
-                user_grade: {
+                course_progress: {
                     progression,
                     total_pages,
                     user_id,
@@ -93,7 +92,7 @@ export const updateProgress = async (
         }
 
         return res.json(
-            "Progress updated for course" + course_id + " for user " + user_id
+            "Progress updated for course " + course_id + " for user " + user_id
         );
     } catch (e) {
         console.log(e);
