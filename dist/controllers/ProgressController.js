@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateProgress = exports.saveProgress = exports.getUserProgress = void 0;
 const database_1 = require("../database");
-// get progess of all courses for a specific user
+// get progress of all courses for a specific user
 const getUserProgress = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user_id = parseInt(req.params.userID);
     try {
@@ -29,7 +29,7 @@ const getUserProgress = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.getUserProgress = getUserProgress;
-// save course progess for a user
+// save course progress for a user
 const saveProgress = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { progression, total_pages, user_id, course_id } = req.body;
     if (!progression || !total_pages || !user_id || !course_id) {
