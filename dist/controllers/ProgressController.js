@@ -32,6 +32,7 @@ const getUserProgress = (req, res) => __awaiter(void 0, void 0, void 0, function
 exports.getUserProgress = getUserProgress;
 // save course progess for a user
 const saveProgress = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const { progression, total_pages, user_id, course_id } = req.body;
     if (!progression || !total_pages || !user_id || !course_id) {
         return res.status(400).json({
@@ -39,9 +40,15 @@ const saveProgress = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         });
     }
     try {
+        const response = yield database_1.pool.query("SELECT * FROM course_progress WHERE user_id = $1 AND course_id = $2", [user_id, course_id]);
+        if (((_a = response === null || response === void 0 ? void 0 : response.rows) === null || _a === void 0 ? void 0 : _a.length) > 0) {
+            return res.status(400).json({
+                message: "Row already exists, please use the update endpoint to update row"
+            });
+        }
         yield database_1.pool.query("INSERT INTO course_progress (progression, total_pages, user_id, course_id) VALUES ($1, $2, $3, $4)", [progression, total_pages, user_id, course_id]);
         return res.json({
-            message: "Progress saved succesfully",
+            message: "Progress saved successfully",
             body: {
                 user_grade: {
                     progression,
@@ -54,7 +61,7 @@ const saveProgress = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
     catch (e) {
         console.log(e);
-        return res.status(500).json("Internal Server Error");
+        return res.status(500).json("Internal Server Error " + e);
     }
 });
 exports.saveProgress = saveProgress;
