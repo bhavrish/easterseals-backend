@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { pool } from '../database'
 import { QueryResult } from 'pg';
 
-// get progess of all courses for a specific user
+// get progress of all courses for a specific user
 export const getUserProgress = async (
     req: Request,
     res: Response
@@ -26,7 +26,7 @@ export const getUserProgress = async (
     }
 };
 
-// save course progess for a user
+// save course progress for a user
 export const saveProgress = async (
     req: Request,
     res: Response
