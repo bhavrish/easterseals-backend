@@ -38,26 +38,37 @@ export const saveProgress = async (
         });
     }
 
-    try {
-        await pool.query(
-            "INSERT INTO course_progress (progression, total_pages, user_id, course_id) VALUES ($1, $2, $3, $4)",
-            [progression, total_pages, user_id, course_id]
-        );
-        return res.json({
-            message: "Progress saved successfully",
-            body: {
-                course_progress: {
-                    progression,
-                    total_pages,
-                    user_id,
-                    course_id,
-                },
-            },
-        });
-    } catch (e) {
-        console.log(e);
-        return res.status(500).json("Internal Server Error");
+  try {
+    const response: QueryResult = await pool.query(
+      "SELECT * FROM course_progress WHERE user_id = $1 AND course_id = $2",
+      [user_id, course_id]
+    );
+
+    if (response?.rows?.length > 0) {
+      return res.status(400).json({
+        message: "Row already exists, please use the update endpoint to update row"
+      });
     }
+
+    await pool.query(
+      "INSERT INTO course_progress (progression, total_pages, user_id, course_id) VALUES ($1, $2, $3, $4)",
+      [progression, total_pages, user_id, course_id]
+    );
+    return res.json({
+      message: "Progress saved successfully",
+      body: {
+        user_grade: {
+          progression,
+          total_pages,
+          user_id,
+          course_id,
+        },
+      },
+    });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json("Internal Server Error " + e);
+  }
 };
 
 // update an existing user course progress

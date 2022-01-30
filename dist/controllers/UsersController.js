@@ -204,13 +204,14 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         return res.status(400).json("Please enter required fields!");
     }
     const userID = parseInt(req.params.userID);
-    var { name, email, new_password, phone_num, date_of_birth, race, gender, address, employment_status, military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank, military_speciality, household_size, income, current_course, completed_courses, referral_source, resources, } = req.body;
+    var { name, new_password, phone_num, date_of_birth, race, gender, address, employment_status, military_affiliated, military_affiliation, military_start_date, military_end_date, last_rank, military_speciality, household_size, income, current_course, completed_courses, referral_source, resources, } = req.body;
     try {
         // retrive user to-be-updated object
         const user = yield database_1.pool.query("Select * FROM users WHERE id = $1", [userID]);
         // set fields equal to either new values specified in request or original user values
         name = name ? name : user.rows[0].name;
         const password = user.rows[0].password;
+        const email = user.rows[0].email;
         phone_num = phone_num ? phone_num : user.rows[0].phone_num;
         date_of_birth = date_of_birth ? date_of_birth : user.rows[0].date_of_birth;
         race = race ? race : user.rows[0].race;
@@ -249,10 +250,8 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             ? referral_source
             : user.rows[0].referral_source;
         resources = resources ? resources : user.rows[0].resources;
-        yield database_1.pool.query("UPDATE users SET name = $1, email = $2, password = $3, phone_num = $4, date_of_birth = $5, race = $6, gender = $7, address = $8, employment_status = $9, military_affiliated = $10, military_affiliation = $11, military_start_date = $12, military_end_date = $13, last_rank = $14, military_speciality = $15, household_size = $16, income = $17, current_course = $18, completed_courses = $19, referral_source = $20, resources = $21 WHERE id = $22", [
+        yield database_1.pool.query("UPDATE users SET name = $1, phone_num = $2, date_of_birth = $3, race = $4, gender = $5, address = $6, employment_status = $7, military_affiliated = $8, military_affiliation = $9, military_start_date = $10, military_end_date = $11, last_rank = $12, military_speciality = $13, household_size = $14, income = $15, current_course = $16, completed_courses = $17, referral_source = $18, resources = $19 WHERE id = $20", [
             name,
-            email,
-            password,
             phone_num,
             date_of_birth,
             race,
