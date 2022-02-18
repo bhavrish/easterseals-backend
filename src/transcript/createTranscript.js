@@ -3,5 +3,9 @@ const PDFDocument = require('pdfkit');  // pdfkit module
 
 // uses completed_courses object to create a new PDF file and save it to path
 function createTranscript(completed_courses, path) {
-    const doc = new PDFDocument()
+    let options = {
+        size: 'LETTER'
+    };
+
+    const doc = new PDFDocument();
 }
