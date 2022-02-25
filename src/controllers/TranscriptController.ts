@@ -2,10 +2,9 @@ import { Request, Response } from 'express'
 import { pool } from '../database'
 import { QueryResult } from 'pg';
 
-const { createTranscript } = require('../../views/createTranscript.js');
-// TODO: Endpoint to generate PDF of user's completed courses
+const { createTranscript, formatDatePath } = require('../transcript_helper/createTranscript.js');
 
-// get the required details for that user
+// generates a PDF of user's completed courses
 export const getUserTranscript = async (req: Request, res: Response): Promise<Response> => {
     const user_id = parseInt(req.params.userID);
 
@@ -29,12 +28,13 @@ export const getUserTranscript = async (req: Request, res: Response): Promise<Re
         student.rows[0].message = "Courses Completed Transcript"
         student.rows[0].completed_courses = completed_courses.rows
 
-        createTranscript(student.rows[0], 'transcript.pdf')
+        let current_date = formatDatePath(new Date())   ;
+        let filename = student.rows[0].name + ' Transcript ' + current_date +  '.pdf';
+        let path = 'user transcripts/' + filename
+        
+        createTranscript(student.rows[0], path)
 
-        // return res.status(200).json(
-        //     student.rows[0]
-        // );
-        return res.status(200).json({ message: "Transcript rendering successfully" });
+        return res.status(200).json({ message: "Transcript generated successfully!" });
     } catch (e) {
         console.log(e);
         return res.status(500).json("Internal Server Error");
@@ -42,6 +42,8 @@ export const getUserTranscript = async (req: Request, res: Response): Promise<Re
 
 };
 
+
+// returns user transcript details as a JSON
 export const getUserDetails = async (req: Request, res: Response): Promise<Response> => {
     const user_id = parseInt(req.params.userID);
 
@@ -66,7 +68,7 @@ export const getUserDetails = async (req: Request, res: Response): Promise<Respo
         student.rows[0].completed_courses = completed_courses.rows
 
         return res.status(200).json(
-            student.rows[0].completed_courses[1].date_completed
+            student.rows[0]
         );
 
     } catch (e) {
