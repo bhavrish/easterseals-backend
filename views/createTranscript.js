@@ -26,11 +26,11 @@ function createTranscript(student_details, path) {
 function generateHeader(doc, student_details) {
     doc.fontSize(14);
     doc.font('views/Poppins/Poppins-Regular.ttf');
-    doc.text("Courses Completed Transcript", 380, 30, {lineBreak: false});
+    doc.text("Courses Completed Transcript", 380, 25, {lineBreak: false});
 
     doc.fontSize(12);
     doc.moveDown();
-    doc.image('views/transcript logo.png', 50, 80, {scale: 0.75});
+    doc.image('views/transcript logo.png', 60, 80, {scale: 0.75});
     doc.text("NAME ", 390, 150); // coordinates X, Y
     doc.font('views/Poppins/Poppins-Light.ttf');
     doc.text(student_details.name, 430, 150, {lineBreak: false});
@@ -40,12 +40,26 @@ function generateTableRow(doc, y_position, course_title, completion_date) {
     doc
         .fontSize(12)
         .font('views/Poppins/Poppins-Regular.ttf')
-        .text(course_title, 65, y_position)
-        .text(completion_date, doc.page.width - 65, y_position);
+        .text(course_title, 70, y_position)
+        .text(completion_date, 410, y_position);
 }   
 
 function generateUserCourseTable(doc, student_details) {
-    generateTableRow(doc, 215, "COURSE TITLE", "COMPLETION DATE");
+    // header row
+    const header_y_position = 215
+    generateTableRow(doc, header_y_position, "COURSE TITLE", "COMPLETION DATE"); 
+
+    const completed_courses = student_details.completed_courses;
+
+    for (let i = 0; i < completed_courses.length; i++) {
+        const this_course_title = completed_courses[i].course_name;
+        const this_course_date = completed_courses[i].date_completed;
+
+        const this_y_position = header_y_position + (i + 1) * 40;
+
+        generateTableRow(doc, this_y_position, this_course_title, this_course_date);
+        
+    }
 }
 
 module.exports = {  

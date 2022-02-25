@@ -60,7 +60,7 @@ const getUserDetails = (req, res) => __awaiter(void 0, void 0, void 0, function*
         }
         student.rows[0].message = "Courses Completed Transcript";
         student.rows[0].completed_courses = completed_courses.rows;
-        return res.status(200).json(student.rows[0].name);
+        return res.status(200).json(student.rows[0].completed_courses[1].date_completed);
     }
     catch (e) {
         console.log(e);

@@ -66,7 +66,7 @@ export const getUserDetails = async (req: Request, res: Response): Promise<Respo
         student.rows[0].completed_courses = completed_courses.rows
 
         return res.status(200).json(
-            student.rows[0].name
+            student.rows[0].completed_courses[1].date_completed
         );
 
     } catch (e) {
