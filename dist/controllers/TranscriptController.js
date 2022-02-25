@@ -9,8 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserTranscript = void 0;
+exports.getUserDetails = exports.getUserTranscript = void 0;
 const database_1 = require("../database");
+const { createTranscript } = require('../../views/createTranscript.js');
 // TODO: Endpoint to generate PDF of user's completed courses
 // get the required details for that user
 const getUserTranscript = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -30,7 +31,11 @@ const getUserTranscript = (req, res) => __awaiter(void 0, void 0, void 0, functi
         }
         student.rows[0].message = "Courses Completed Transcript";
         student.rows[0].completed_courses = completed_courses.rows;
-        return res.status(200).json(student.rows[0]);
+        createTranscript(student.rows[0], 'transcript.pdf');
+        // return res.status(200).json(
+        //     student.rows[0]
+        // );
+        return res.status(200).json({ message: "Transcript rendering successfully" });
     }
     catch (e) {
         console.log(e);
@@ -38,3 +43,28 @@ const getUserTranscript = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.getUserTranscript = getUserTranscript;
+const getUserDetails = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user_id = parseInt(req.params.userID);
+    try {
+        // retrieve student name
+        const student = yield database_1.pool.query("SELECT name FROM users WHERE id = $1", [user_id]);
+        // get all completed courses
+        const completed_courses = yield database_1.pool.query("SELECT course_id, date_completed FROM course_progress WHERE user_id = $1 AND date_completed IS NOT NULL", [user_id]);
+        // retrieve course details (course title) from courses table
+        // for each completed course
+        for (let index = 0; index < completed_courses.rows.length; index++) {
+            // retrieve the course name
+            const course_name = yield database_1.pool.query("SELECT course_name FROM courses WHERE id = $1", [completed_courses.rows[index].course_id]);
+            // add the course name to the object
+            completed_courses.rows[index].course_name = course_name.rows[0].course_name;
+        }
+        student.rows[0].message = "Courses Completed Transcript";
+        student.rows[0].completed_courses = completed_courses.rows;
+        return res.status(200).json(student.rows[0].name);
+    }
+    catch (e) {
+        console.log(e);
+        return res.status(500).json("Internal Server Error");
+    }
+});
+exports.getUserDetails = getUserDetails;

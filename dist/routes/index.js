@@ -54,4 +54,5 @@ router.post('/progress', ProgressController_1.saveProgress); // save course prog
 router.post('/progress/user/:userID', ProgressController_1.updateProgress); // update an existing user course progress
 // transcript-related endpoints
 router.get('/transcript/user/:userID', TranscriptController_1.getUserTranscript); // generate a transcript of completed courses for that user
+router.get('/transcript/user/transcript/:userID', TranscriptController_1.getUserDetails); // generate a transcript of completed courses for that user
 exports.default = router;
