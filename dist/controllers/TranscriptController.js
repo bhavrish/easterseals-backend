@@ -11,10 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserDetails = exports.getUserTranscript = void 0;
 const database_1 = require("../database");
-
-// this is the relative path from the location of this file, different from that of the src\controllers\TranscriptController.ts file
 const { createTranscript, formatDatePath } = require('../../src/transcript_helper/createTranscript.js');
-
 // generates a PDF of user's completed courses
 const getUserTranscript = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user_id = parseInt(req.params.userID);
@@ -31,13 +28,20 @@ const getUserTranscript = (req, res) => __awaiter(void 0, void 0, void 0, functi
             // add the course name to the object
             completed_courses.rows[index].course_name = course_name.rows[0].course_name;
         }
-        student.rows[0].message = "Courses Completed Transcript";
         student.rows[0].completed_courses = completed_courses.rows;
-        let current_date = formatDatePath(new Date());
-        let filename = student.rows[0].name + ' Transcript ' + current_date + '.pdf';
-        let path = 'user transcripts/' + filename;
-        createTranscript(student.rows[0], path);
-        return res.status(200).json({ message: "Transcript generated successfully!" });
+        // if this user has not completed any courses display message
+        if (student.rows[0].completed_courses.length == 0) {
+            return res.status(400).json({
+                message: "No completed courses for this user"
+            });
+        }
+        else { // otherwise generate a transcript pdf of completed courses
+            let current_date = formatDatePath(new Date());
+            let filename = student.rows[0].name + ' Transcript ' + current_date + '.pdf';
+            let path = 'user transcripts/' + filename;
+            createTranscript(student.rows[0], path);
+            return res.status(200).json({ message: "Transcript generated successfully!" });
+        }
     }
     catch (e) {
         console.log(e);
@@ -63,7 +67,14 @@ const getUserDetails = (req, res) => __awaiter(void 0, void 0, void 0, function*
         }
         student.rows[0].message = "Courses Completed Transcript";
         student.rows[0].completed_courses = completed_courses.rows;
-        return res.status(200).json(student.rows[0]);
+        if (student.rows[0].completed_courses.length == 0) {
+            return res.status(400).json({
+                message: "No completed courses for this user"
+            });
+        }
+        else {
+            return res.status(200).json(student.rows[0]);
+        }
     }
     catch (e) {
         console.log(e);

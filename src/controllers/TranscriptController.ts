@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { pool } from '../database'
 import { QueryResult } from 'pg';
 
-const { createTranscript, formatDatePath } = require('../transcript_helper/createTranscript.js');
+const { createTranscript, formatDatePath } = require('../../src/transcript_helper/createTranscript.js');
 
 // generates a PDF of user's completed courses
 export const getUserTranscript = async (req: Request, res: Response): Promise<Response> => {
@@ -25,16 +25,23 @@ export const getUserTranscript = async (req: Request, res: Response): Promise<Re
             completed_courses.rows[index].course_name = course_name.rows[0].course_name;
         }
 
-        student.rows[0].message = "Courses Completed Transcript"
         student.rows[0].completed_courses = completed_courses.rows
 
-        let current_date = formatDatePath(new Date())   ;
-        let filename = student.rows[0].name + ' Transcript ' + current_date +  '.pdf';
-        let path = 'user transcripts/' + filename
-        
-        createTranscript(student.rows[0], path)
+        // if this user has not completed any courses display message
+        if (student.rows[0].completed_courses.length == 0) {
+            return res.status(400).json({
+                message: "No completed courses for this user"
+            });
+        } else { // otherwise generate a transcript pdf of completed courses
+            let current_date = formatDatePath(new Date());
+            let filename = student.rows[0].name + ' Transcript ' + current_date + '.pdf';
+            let path = 'user transcripts/' + filename
 
-        return res.status(200).json({ message: "Transcript generated successfully!" });
+            createTranscript(student.rows[0], path)
+
+            return res.status(200).json({ message: "Transcript generated successfully!" });
+        }
+
     } catch (e) {
         console.log(e);
         return res.status(500).json("Internal Server Error");
@@ -67,9 +74,16 @@ export const getUserDetails = async (req: Request, res: Response): Promise<Respo
         student.rows[0].message = "Courses Completed Transcript"
         student.rows[0].completed_courses = completed_courses.rows
 
-        return res.status(200).json(
-            student.rows[0]
-        );
+        if (student.rows[0].completed_courses.length == 0) {
+            return res.status(400).json({
+                message: "No completed courses for this user"
+            });
+        } else {
+            return res.status(200).json(
+                student.rows[0]
+            );
+        }
+
 
     } catch (e) {
         console.log(e);
