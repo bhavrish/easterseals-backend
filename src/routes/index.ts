@@ -3,6 +3,7 @@ import {getUsers, getUser, createUser, signInUser, updateUser, deleteUser, updat
 import {getAllFeedback, getCourseFeedback, postFeedback} from '../controllers/FeedbackController'
 import {getAllGrades, getUserGrades, getCourseGrades, uploadGrade} from '../controllers/GradesController'
 import {getUserProgress, saveProgress, updateProgress} from '../controllers/ProgressController'
+import {getUserTranscript, getUserDetails} from '../controllers/TranscriptController'
 
 const router = Router();
 
@@ -55,5 +56,10 @@ router.post('/grades', uploadGrade) // upload new grade for a course (USER FUNCT
 router.get('/progress/user/:userID', getUserProgress) // get progress of all courses for a specific user 
 router.post('/progress', saveProgress) // save course progress for a user
 router.post('/progress/user/:userID', updateProgress) // update an existing user course progress
+
+
+// transcript-related endpoints
+router.get('/transcript/user/:userID', getUserTranscript) // generate a transcript of completed courses for that user
+router.get('/transcript/user/transcript/:userID', getUserDetails) // generate a transcript of completed courses for that user
 
 export default router;
