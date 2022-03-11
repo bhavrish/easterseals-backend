@@ -19,11 +19,12 @@ npm install
 Create a `.env` file in your root directory, paste the following and replace your username and password with your Postgres credentials
 
 ```
-USER = username
-HOST = localhost
-PORT = 5433
-PASSWORD = password
-DATABASE = easterseals
+DB_USER = user
+DB_HOST = localhost
+DB_PASSWORD = password
+DATABASE = database
+DB_PORT = 5432
+PORT = 3000
 ```
 
 ## Database
